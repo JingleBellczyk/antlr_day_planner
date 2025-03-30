@@ -40,7 +40,7 @@ public class CalendarQuickstart {
    */
   private static final List<String> SCOPES =
           Collections.singletonList(CalendarScopes.CALENDAR_READONLY);
-  private static final String CREDENTIALS_FILE_PATH = "/home/agata/Documents/projektMiasi/src/main/resources/credentials.json";
+  private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
 
   /**
    * Creates an authorized Credential object.
@@ -52,14 +52,11 @@ public class CalendarQuickstart {
   private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT)
           throws IOException {
     // Load client secrets.
-    // Zmiana: zamiast getResourceAsStream, używamy FileInputStream
-    File credentialsFile = new File("/home/agata/Documents/projektMiasi/src/main/resources/credentials.json");
-    if (!credentialsFile.exists()) {
-      throw new FileNotFoundException("Resource not found: " + credentialsFile.getAbsolutePath());
+    InputStream in = CalendarQuickstart.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
+    if (in == null) {
+      throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
     }
-    GoogleClientSecrets clientSecrets =
-            GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(new FileInputStream(credentialsFile)));
-
+    GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
     // Build flow and trigger user authorization request.
     GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
@@ -68,9 +65,7 @@ public class CalendarQuickstart {
             .setAccessType("offline")
             .build();
     LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
-    Credential credential = new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
-    //returns an authorized Credential object.
-    return credential;
+    return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
   }
 
   public static void main(String... args) throws IOException, GeneralSecurityException {

@@ -1,0 +1,20 @@
+# Ignore Java build files
+/build/
+*.class
+
+# Ignore IntelliJ IDEA specific files
+.idea/
+
+# Ignore Gradle files
+.gradle/
+gradle/
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore Maven dependency directory
+/target/
+
+# google credentials
+src/main/resources/credentials.json

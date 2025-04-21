@@ -17,4 +17,13 @@ Thumbs.db
 /target/
 
 # google credentials
+tokens/
 src/main/resources/credentials.json
+
+src/main/java/CalendarQuickstart.java
+src/main/java/DocsQuickstart.java
+src/main/java/GmailQuickstart.java
+
+src/main/gen/*
+
+gradle/*

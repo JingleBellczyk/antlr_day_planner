@@ -1,0 +1,22 @@
+CALENDAR API
+Możliwe interwały czasowe wydarzeń
+String recurrenceRule = "RRULE:FREQ=DAILY;COUNT=5"; // Codziennie przez 5 dni
+String recurrenceRule = "RRULE:FREQ=WEEKLY;INTERVAL=2;COUNT=4"; // Co drugi tydzień przez 4 tygodnie
+String recurrenceRule = "RRULE:FREQ=WEEKLY;BYDAY=MO,WE,FR;COUNT=10"; // Co poniedziałek, środę i piątek przez 10 wystąpień
+String recurrenceRule = "RRULE:FREQ=MONTHLY;BYMONTHDAY=15;COUNT=12"; // 15. dnia każdego miesiąca przez 12 miesięcy
+String recurrenceRule = "RRULE:FREQ=YEARLY;BYMONTH=12;COUNT=5"; // Co rok w grudniu przez 5 lat
+String recurrenceRule = "RRULE:FREQ=DAILY;UNTIL=20250401T120000Z"; // Codziennie do 1 kwietnia 2025 roku
+String recurrenceRule = "RRULE:FREQ=MONTHLY;COUNT=6"; // Co miesiąc przez 6 miesięcy
+String recurrenceRule = "RRULE:FREQ=MONTHLY;BYDAY=1MO;COUNT=6"; // Pierwszy poniedziałek każdego miesiąca przez 6 miesięcy
+String recurrenceRule = "RRULE:FREQ=MONTHLY;BYDAY=1MO,1TU;BYSETPOS=1;COUNT=6"; // Pierwszy poniedziałek i wtorek każdego miesiąca przez 6 miesięcy
+String recurrenceRule = "RRULE:FREQ=WEEKLY;COUNT=10"; // Co tydzień przez 10 wystąpień
+
+możliwe komendy:
+mail create 266897@student.pwr.edu.pl "test" notatki.txt
+mail create 266897@student.pwr.edu.pl "temat test" "Czesc, co tam u ciebie?"
+mail list 10
+mail show 7
+
+calendar create 21.05.2025 10:00 22.05.2025 01:00 summ:"summary" daily 3 before:"praca" desc:"description" loc:"home"
+calendar create 21.05.2025 10:00 13:00 summ:"summary" daily 3 before:"summary" desc:"description" loc:"home"
+calendar show 21.05.2025 color

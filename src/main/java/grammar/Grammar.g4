@@ -1,23 +1,19 @@
 grammar Grammar;
 
-prog: (stat)* EOF;
+prog: expr EOF;
 
-stat
-     : expr ';'?                 # all_expr_stat
-     | '>>' expr ';'?                # print_stat
-     ;
+//stat
+//     : expr ';'?                 # all_expr_stat
+//     | '>>' expr ';'?                # print_stat
+//     ;
 
 expr:
-     DATE                            # date_tok
-     | listing                       # lstg
+      listing                       # lstg
      | mail                          # mail_op
      | calendar                      # calendar_op
      | occurance                     # occ_tok
-     | COLOR_TYPE                    # color_type_tok
-     | TXT                           # txt_tok
      | tasklist                      # tsk_lst_tok
      | task                          # tsk_tok
-     | STRING                        # string_tok
 ;
 
 listing:
@@ -108,7 +104,14 @@ HOUR_MINUTE: (('0'? [0-9]) | ('1' [0-9]) | ('2' [0-3])) ':' ([0-5] [0-9]);
 
 
  // email
- TXT: [a-zA-Z_][a-zA-Z0-9_]* '.txt';
+// TXT: [a-zA-Z_][a-zA-Z0-9_]* '.txt';
+//TXT: ([a-zA-Z_][a-zA-Z0-9_]*'.txt');
+
+TXT: ('/' TXT_ID (('/' | '\\') TXT_ID)*)? TXT_ID '.txt'; // Ścieżka zaczynająca się od / + nazwa pliku .txt
+TXT_ID: [a-zA-Z_][a-zA-Z0-9_]*; // Identyfikator
+
+WS: [ \t\r\n]+ -> skip; // Pomijanie białych znaków
+
  EMAIL: [a-zA-Z0-9._]+ '@' [a-zA-Z0-9.-]+;
 
  // task
@@ -128,7 +131,7 @@ HOUR_MINUTE: (('0'? [0-9]) | ('1' [0-9]) | ('2' [0-3])) ':' ([0-5] [0-9]);
 
  // Whitespace and comments
  NEWLINE: [\r\n]+ -> channel(HIDDEN);
- WS: [ \t]+ -> channel(HIDDEN);
+// WS: [ \t]+ -> channel(HIDDEN);
 
  // Tokens
  INT: [0-9]+;

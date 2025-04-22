@@ -107,7 +107,7 @@ public class Utils {
 
         try {
             return LocalTime.parse(timeString, timeFormatter);
-        } catch (DateTimeParseException e) {
+        } catch (DateTimeParseException e) { //todo
             System.out.printf("Bad time format: %s, required format HH:mm (0-23:00-59)%n", timeString);
             return null;
         }

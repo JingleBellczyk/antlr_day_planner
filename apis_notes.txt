@@ -13,6 +13,7 @@ String recurrenceRule = "RRULE:FREQ=WEEKLY;COUNT=10"; // Co tydzień przez 10 wy
 
 możliwe komendy:
 mail create 266897@student.pwr.edu.pl "test" notatki.txt
+mail create 266897@student.pwr.edu.pl "test"  /home/agata/Documents/projektMiasi/apis_notes.txt
 mail create 266897@student.pwr.edu.pl "temat test" "Czesc, co tam u ciebie?"
 mail list 10
 mail show 7

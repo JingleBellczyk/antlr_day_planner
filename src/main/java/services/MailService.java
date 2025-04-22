@@ -17,10 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 public class MailService {
 
@@ -29,7 +26,6 @@ public class MailService {
             "https://www.googleapis.com/auth/gmail.send"
     );
 
-
     private Gmail service;
 
     public MailService(){
@@ -37,105 +33,83 @@ public class MailService {
     }
 
     public static Gmail getGoogleService() {
-
         final NetHttpTransport HTTP_TRANSPORT;
         try {
             HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        } catch (GeneralSecurityException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
+        } catch (GeneralSecurityException | IOException e) {
             throw new RuntimeException(e);
         }
-        Gmail service = null;
         try {
-            service = new Gmail.Builder(HTTP_TRANSPORT, Utils.JSON_FACTORY, Utils.getCredentials(HTTP_TRANSPORT))
-                    .setApplicationName("Czy to potrzebne")
+            return new Gmail.Builder(HTTP_TRANSPORT, Utils.JSON_FACTORY, Utils.getCredentials(HTTP_TRANSPORT))
+                    .setApplicationName("PLANNER APP")
                     .build();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        return service;
     }
 
-    public List<Message> getRecentEmails(Long count) {
-
-        // Pobierz listę wiadomości (do ostatnich 10)
-        ListMessagesResponse messagesResponse = null;
+    public List<String> getRecentEmails(Long count) {
+        List<String> output = new ArrayList<>();
+        ListMessagesResponse messagesResponse;
         try {
             messagesResponse = service.users().messages().list("me")
-                    .setMaxResults(count)  // Maksymalna liczba wiadomości
+                    .setMaxResults(count)
                     .execute();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        // Sprawdź, czy są wiadomości
         if (messagesResponse.getMessages() == null || messagesResponse.getMessages().isEmpty()) {
-            System.out.println("Brak wiadomości.");
-            return null;
+            output.add("No messages.");
         } else {
-            System.out.println("Ostatnie " + count + " wiadomości:");
-
-            // Iteruj przez ID wiadomości i pobierz temat każdej z nich
+            output.add("Last " + count + " messages:");
             for (Message message : messagesResponse.getMessages()) {
-                // Pobierz pełne szczegóły wiadomości
-                Message fullMessage = null;
+                Message fullMessage;
                 try {
                     fullMessage = service.users().messages().get("me", message.getId()).execute();
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
 
-                // Sprawdź nagłówki wiadomości, aby znaleźć temat
-                String subject = "Brak tematu";
+                String subject = "No topic";
                 for (MessagePartHeader header : fullMessage.getPayload().getHeaders()) {
                     if ("Subject".equalsIgnoreCase(header.getName())) {
                         subject = header.getValue();
                         break;
                     }
                 }
-
-                // Wyświetl temat wiadomości
-                System.out.println("Temat: " + subject);
+                output.add("Subject: " + subject);
             }
         }
-        return messagesResponse.getMessages();
+        return output;
     }
 
-    public void getEmailByIndex(int index){
-        // Pobierz listę wiadomości
-        long count = 10;
-        ListMessagesResponse messagesResponse = null;
+    public List<String> getEmailByIndex(int index){
+        List<String> output = new ArrayList<>();
+        long count = index+1;
+        ListMessagesResponse messagesResponse;
         try {
             messagesResponse = service.users().messages().list("me")
-                    .setMaxResults(count)  // Możesz dostosować liczbę wiadomości, które chcesz pobrać
+                    .setMaxResults(count)
                     .execute();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        // Sprawdź, czy są wiadomości
         if (messagesResponse.getMessages() == null || messagesResponse.getMessages().isEmpty()) {
-            System.out.println("Brak wiadomości.");
+            output.add("Brak wiadomości.");
         } else {
-            // Sprawdź, czy indeks jest prawidłowy
             if (index < 0 || index >= messagesResponse.getMessages().size()) {
-                System.out.println("Indeks poza zakresem.");
+                output.add("Indeks poza zakresem.");
             } else {
-                // Pobierz ID wiadomości na podstawie indeksu
                 Message message = messagesResponse.getMessages().get(index);
-
-                // Pobierz pełne szczegóły wiadomości
-                Message fullMessage = null;
+                Message fullMessage;
                 try {
                     fullMessage = service.users().messages().get("me", message.getId()).execute();
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
 
-                // Wyświetl informacje o wiadomości (np. temat)
-                System.out.println("Temat wiadomości:");
                 String subject = "Brak tematu";
                 for (MessagePartHeader header : fullMessage.getPayload().getHeaders()) {
                     if ("Subject".equalsIgnoreCase(header.getName())) {
@@ -143,66 +117,59 @@ public class MailService {
                         break;
                     }
                 }
-                System.out.println("Temat: " + subject);
-
-                // Wyświetl treść wiadomości (jeśli dostępna)
-                System.out.println("Treść wiadomości:");
-                String body = null;
+                output.add("Temat: " + subject);
+                String body;
                 try {
                     body = getBody(fullMessage);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
                 System.out.println(body);
+                output.add(body);
             }
         }
+        return output;
     }
 
-    private static String getBody(Message message) throws IOException {
-        String body = "";
-        if (message.getPayload() != null && message.getPayload().getParts() != null) {
-            for (MessagePart part : message.getPayload().getParts()) {
-                if ("text/plain".equals(part.getMimeType())) {
-                    try {
-                        if (part.getBody() != null && part.getBody().getData() != null) {
-                            byte[] decodedBytes = Base64.getUrlDecoder().decode(part.getBody().getData());
-                            body = new String(decodedBytes);
-                            break;
-                        }
-                    } catch (IllegalArgumentException e) {
-                        System.err.println("Błąd dekodowania base64: " + e.getMessage());
+private static String getBody(Message message) throws IOException {
+    String body = "";
+    if (message.getPayload() != null && message.getPayload().getParts() != null) {
+        for (MessagePart part : message.getPayload().getParts()) {
+            if ("text/plain".equals(part.getMimeType())) {
+                try {
+                    if (part.getBody() != null && part.getBody().getData() != null) {
+                        byte[] decodedBytes = Base64.getUrlDecoder().decode(part.getBody().getData());
+                        body = new String(decodedBytes);
+                        break;
                     }
+                } catch (IllegalArgumentException e) {
+                    System.err.println("Błąd dekodowania base64: " + e.getMessage());
                 }
             }
-        } else {
-            System.err.println("Brak części wiadomości lub payloadu.");
         }
-        return body;
+    } else {
+        System.err.println("Brak części wiadomości lub payloadu.");
     }
+    return body;
+}
 
-    //SEND EMAIL
-
-    public void sendEmailFromFile(String recipent, String subject, String filePath) {
-
-        String emailContent = null;
+    public String sendEmailFromFile(String recipient, String subject, String filePath) {
+        String emailContent;
+        System.out.println(filePath);
         try {
             emailContent = new String(Files.readAllBytes(Paths.get(filePath)));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Nie udało się odczytać pliku: " + e.getMessage(), e);
         }
 
         try {
-            sendEmail(recipent, subject, emailContent);
-        } catch (MessagingException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            return sendEmail(recipient, subject, emailContent);
+        } catch (MessagingException | IOException e) {
+            throw new RuntimeException("Nie udało się wysłać maila: " + e.getMessage(), e);
         }
     }
 
-    public void sendEmail(String recipient, String subject, String emailContent) throws MessagingException, IOException {
-        System.out.println("Sending email to : " + recipient);
-
+    public String sendEmail(String recipient, String subject, String emailContent) throws MessagingException, IOException {
         Gmail service = getGoogleService();
 
         Properties props = new Properties();
@@ -220,6 +187,7 @@ public class MailService {
         Message message = new Message().setRaw(encodedEmail);
 
         service.users().messages().send("me", message).execute();
-        System.out.println("Email sent to: " + recipient);
+
+        return "Email sent to: " + recipient;
     }
 }

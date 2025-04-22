@@ -6,6 +6,7 @@ import services.CalendarService;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 public class UserCalendarOperations {
@@ -16,35 +17,29 @@ public class UserCalendarOperations {
         calendarService = new CalendarService();
     }
 
-    public void getEventsForDay(Date date, Map<String, Boolean> options) {
+    public List<String> getEventsForDay(Date date, Map<String, Boolean> options) {
         try {
-            calendarService.getEventsForDay(date, options);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (GeneralSecurityException e) {
+            return calendarService.getEventsForDay(date, options);
+        } catch (IOException | GeneralSecurityException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void listUpcomingEvents(long number) {
+    public List<String> listUpcomingEvents(long number) {
         try {
-            calendarService.listUpcomingEvents((int) number);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (GeneralSecurityException e) {
+            return calendarService.listUpcomingEvents((int) number);
+        } catch (IOException | GeneralSecurityException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void createEventWithOptions(DateTime startDateTime,
-                                       DateTime endDateTime,
-                                       String summary,
-                                       Map<String, Object> options) {
+    public List<String> createEventWithOptions(DateTime startDateTime,
+                                         DateTime endDateTime,
+                                         String summary,
+                                         Map<String, Object> options) {
         try {
-            calendarService.createEventWithOptions(startDateTime,endDateTime,summary,options);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (GeneralSecurityException e) {
+            return calendarService.createEventWithOptions(startDateTime, endDateTime, summary, options);
+        } catch (IOException | GeneralSecurityException e) {
             throw new RuntimeException(e);
         }
     }

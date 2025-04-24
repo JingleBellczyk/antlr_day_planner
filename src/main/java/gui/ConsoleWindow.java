@@ -64,6 +64,7 @@ public class ConsoleWindow extends JFrame {
         // ----------------------
         outputArea = new JTextArea();
         outputArea.setEditable(false);
+        outputArea.setFont(new Font("Monospaced", Font.PLAIN, 16));
         JScrollPane scrollPane = new JScrollPane(outputArea);
 
         // ----------------------
@@ -71,8 +72,9 @@ public class ConsoleWindow extends JFrame {
         // ----------------------
         JPanel bottomPanel = new JPanel(new BorderLayout());
         inputField = new JTextField();
+        inputField.setFont(new Font("Monospaced", Font.PLAIN, 16));
 
-        JButton fileButton = new JButton("📂 Dodaj plik");
+        JButton fileButton = new JButton("📂 Add file");
         fileButton.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
             int result = fileChooser.showOpenDialog(this);
@@ -104,6 +106,28 @@ public class ConsoleWindow extends JFrame {
                 appendOutput(result);
             } catch (Exception ex) {
                 appendOutput("Błąd: " + ex.getMessage());
+            }
+        });
+
+        //mozna strzalki do
+        inputField.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyPressed(java.awt.event.KeyEvent e) {
+                if (e.getKeyCode() == java.awt.event.KeyEvent.VK_UP) {
+                    if (historyIndex > 0) {
+                        historyIndex--;
+                        inputField.setText(commandHistory.get(historyIndex));
+                    }
+                } else if (e.getKeyCode() == java.awt.event.KeyEvent.VK_DOWN) {
+                    if (historyIndex < commandHistory.size() - 1) {
+                        historyIndex++;
+                        inputField.setText(commandHistory.get(historyIndex));
+                    } else {
+                        // Po ostatniej komendzie pokaż pusty input
+                        historyIndex = commandHistory.size();
+                        inputField.setText("");
+                    }
+                }
             }
         });
 

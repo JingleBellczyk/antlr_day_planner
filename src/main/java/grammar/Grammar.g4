@@ -2,19 +2,18 @@ grammar Grammar;
 
 prog: expr EOF;
 
-//stat
-//     : expr ';'?                 # all_expr_stat
-//     | '>>' expr ';'?                # print_stat
-//     ;
-
 expr:
-      listing                       # lstg
+        help                         #help_op
+     | listing                       # lstg
      | mail                          # mail_op
      | calendar                      # calendar_op
-     | occurance                     # occ_tok
      | tasklist                      # tsk_lst_tok
      | task                          # tsk_tok
 ;
+help:
+    object=(MAIL | CALENDAR) 'help' #help_specific_op
+    | 'help' #help_general_op
+    ;
 
 listing:
      object=(MAIL | CALENDAR) LIST num=INT #list_service_last_n;
@@ -39,9 +38,7 @@ task:
 
 ;
 
-
 mail:
-//      base=MAIL do=LIST num=INT #list_mails //można wypisać odstanie maile- todo popraw
      base=MAIL do=SHOW num=INT #show_mail //można wypisać zawartość maila
      | base=MAIL do=CREATE (dest=EMAIL title=STRING mailBody=(STRING | TXT)) #send_mail//można wysłać maila od zadanej treści z pliku lub z komendy na email z tematem
  ;
@@ -51,7 +48,7 @@ calendar:
     CALENDAR SHOW date=DATE arg=calendar_objects #show_events_date //wypisanie wszystkich wydarzeń na dany dzień ze szczegółami np. czas, lokacja, summary
     | CALENDAR CREATE start=DATE startTime=HOUR_MINUTE (end=DATE)? endTime=HOUR_MINUTE SUMMARY':' sum=STRING arg=event_objects #create_event  //stworzenie nowego wydarzenia, które można spersonalizować
      ;
-//dodaj - pobierz najblizesze wydarzenia
+
 event_objects:
          (occur=occurance? ('before:' bef=STRING)? color=COLOR_TYPE? ('desc:' desc=STRING)?  ('loc:' loc =STRING)?)
  ;
@@ -65,78 +62,65 @@ calendar_objects:
 occurance:
      per=PERIOD count=INT;
 
- // Keywords for services
+// Keywords for services
+
+MAIL: 'mail';
+CALENDAR: 'calendar';
+NAME: 'name';
+TASKLIST: 'tasklist';
+TASK: 'task';
 
 
- MAIL: 'mail';
- CALENDAR: 'calendar';
- NAME: 'name';
- TASKLIST: 'tasklist';
- TASK: 'task';
+//Keywords for operations
+LIST  : 'list';
+CREATE: 'create';
+DELETE: 'delete';
+ADD: 'add';
+UPDATE: 'update';
+SHOW: 'show';
+ALL: 'all';
+CLEAR: 'clear';
+REMOVE: 'remove';
+MOVE: 'move';
 
-
- //Keywords for operations
- LIST  : 'list';
- CREATE: 'create';
- DELETE: 'delete';
- ADD: 'add';
- UPDATE: 'update';
- SHOW: 'show';
- ALL: 'all';
- CLEAR: 'clear';
- REMOVE: 'remove';
- MOVE: 'move';
-
- // General
-// DAY : '0'[1-9] | '1'[0-9] | '2'[0-9] | '3'[01] ;
-// MONTH : '0'[1-9] | '1'[0-2] ;
-// YEAR : '20'[0-9][0-9];
- DATE : ('0'[1-9] | '1'[0-9] | '2'[0-9] | '3'[01]) '.' ('0'[1-9] | '1'[0-2]) '.' '20'[0-9][0-9] ;
+DATE : ('0'[1-9] | '1'[0-9] | '2'[0-9] | '3'[01]) '.' ('0'[1-9] | '1'[0-2]) '.' '20'[0-9][0-9] ;
 
 HOUR_MINUTE: (('0'? [0-9]) | ('1' [0-9]) | ('2' [0-3])) ':' ([0-5] [0-9]);
 
-//HOUR: ('0'? [0-9]) | ('1' [0-9]) | ('2' [0-3]);
-//MINUTE: [0-5] [0-9];
-
- // Listing
- LISTABLE_OBJECT: CALENDAR | MAIL;
- LISTING_TYPE: 'upcoming' | 'previous';
-
-
- // email
-// TXT: [a-zA-Z_][a-zA-Z0-9_]* '.txt';
-//TXT: ([a-zA-Z_][a-zA-Z0-9_]*'.txt');
+// Listing
+LISTABLE_OBJECT: CALENDAR | MAIL;
+LISTING_TYPE: 'upcoming' | 'previous';
 
 TXT: ('/' TXT_ID (('/' | '\\') TXT_ID)*)? TXT_ID '.txt'; // Ścieżka zaczynająca się od / + nazwa pliku .txt
 TXT_ID: [a-zA-Z_][a-zA-Z0-9_]*; // Identyfikator
 
 WS: [ \t\r\n]+ -> skip; // Pomijanie białych znaków
 
- EMAIL: [a-zA-Z0-9._]+ '@' [a-zA-Z0-9.-]+;
+EMAIL: [a-zA-Z0-9._]+ '@' [a-zA-Z0-9.-]+;
 
- // task
- STATUS: 'needsAction' | 'completed';
+// task
+STATUS: 'needsAction' | 'completed';
 
 
- // calendar
- SUMMARY: 'summ';
- TIME: 'time';
- DESCRIPTION: 'desc';
- TITLE: 'title';
- COLOR: 'color';
+// calendar
+SUMMARY: 'summ';
+TIME: 'time';
+DESCRIPTION: 'desc';
+TITLE: 'title';
+COLOR: 'color';
 
- COLOR_TYPE : 'blue' | 'green' | 'purple' | 'red' | 'yellow' | 'orange' | 'turquoise' | 'gray' | 'bold_blue' | 'bold_green' | 'bold_red' ;
+COLOR_TYPE : 'blue' | 'green' | 'purple' | 'red' | 'yellow' | 'orange' | 'turquoise' | 'gray' | 'bold_blue' | 'bold_green' | 'bold_red' ;
 
- PERIOD: 'daily' | 'weekly' | 'monthly' | 'yearly';
+PERIOD: 'daily' | 'weekly' | 'monthly' | 'yearly';
 
- // Whitespace and comments
- NEWLINE: [\r\n]+ -> channel(HIDDEN);
+// Whitespace and comments
+NEWLINE: [\r\n]+ -> channel(HIDDEN);
 // WS: [ \t]+ -> channel(HIDDEN);
 
  // Tokens
- INT: [0-9]+;
- ID: [a-zA-Z_][a-zA-Z0-9._]*;
- STRING: '"' ~["\r\n]* '"' ; // ~ to negacja - czyli wszystko co nie spełnia warunku: ", \r - carriage return(newline), \n
+INT: [0-9]+;
+ID: [a-zA-Z_][a-zA-Z0-9._]*;
+STRING: '"' ~["\r\n]* '"' ;
 
- COMMENT: '/*' .*? '*/' -> channel(HIDDEN);
- LINE_COMMENT: '//' ~[\r\n]* '\n' -> channel(HIDDEN);
+COMMENT: '/*' .*? '*/' -> channel(HIDDEN);
+LINE_COMMENT: '//' ~[\r\n]* '\n' -> channel(HIDDEN);

@@ -20,10 +20,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -154,4 +151,29 @@ public class Utils {
         }
     }
 
+    public static List<String> readFileTxt(String path) {
+        List<String> commands = new ArrayList<>();
+
+        try {
+            InputStream inputStream = ClassLoader.getSystemResourceAsStream(path);
+
+            if (inputStream == null) {
+                commands.add("Nie znaleziono pliku z komendami.");
+                return commands;
+            }
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                commands.add(line);
+            }
+
+            reader.close();
+        } catch (IOException e) {
+            commands.add("Błąd podczas wczytywania komend: " + e.getMessage());
+        }
+
+        return commands;
+    }
 }

@@ -3,11 +3,12 @@ package interpreter;
 import com.google.api.client.util.DateTime;
 import grammar.GrammarBaseVisitor;
 import grammar.GrammarParser;
+import logic.Constants;
 import logic.UserCalendarOperations;
 import logic.UserMailOperations;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.TokenStream;
-import org.antlr.v4.runtime.tree.TerminalNode;
+import services.Utils;
 
 import java.time.LocalTime;
 import java.util.Date;
@@ -21,15 +22,11 @@ import static services.Utils.*;
 
 public class PlannerVisitor extends GrammarBaseVisitor<List<String>> {
 
-    private final TokenStream tokenStream;
-    private final CharStream inputStream;
     private UserMailOperations userMailOperations;
     private UserCalendarOperations userCalendarOperations;
 
     public PlannerVisitor(CharStream input, TokenStream tokens) {
         super();
-        this.inputStream = input;
-        this.tokenStream = tokens;
         this.userMailOperations = new UserMailOperations();
         this.userCalendarOperations = new UserCalendarOperations();
     }
@@ -37,6 +34,7 @@ public class PlannerVisitor extends GrammarBaseVisitor<List<String>> {
 
     @Override
     public List<String> visitList_service_last_n(GrammarParser.List_service_last_nContext ctx) {
+
         Long number = Long.parseLong(ctx.num.getText());
 
         switch (ctx.object.getType()) {
@@ -50,12 +48,14 @@ public class PlannerVisitor extends GrammarBaseVisitor<List<String>> {
 
     @Override
     public List<String> visitShow_mail(GrammarParser.Show_mailContext ctx) {
+
         Integer index = Integer.parseInt(ctx.num.getText());
         return userMailOperations.showEmailOnIndex(index);
     }
 
     @Override
     public List<String> visitSend_mail(GrammarParser.Send_mailContext ctx) {
+
         String destination = ctx.dest.getText();
         String title = stripQuotes(ctx.title.getText());
         String mailBody = stripQuotes(ctx.mailBody.getText());
@@ -76,6 +76,7 @@ public class PlannerVisitor extends GrammarBaseVisitor<List<String>> {
 
     @Override
     public List<String> visitShow_events_date(GrammarParser.Show_events_dateContext ctx) {
+
         GrammarParser.Calendar_objectsContext args = ctx.arg;
 
         boolean hasColor = args.COLOR() != null;
@@ -98,6 +99,7 @@ public class PlannerVisitor extends GrammarBaseVisitor<List<String>> {
 
     @Override
     public List<String> visitCreate_event(Create_eventContext ctx) {
+
         String startDateString = ctx.start.getText();
         String startTimeString = ctx.startTime.getText();
         String endDateString = ctx.end != null ? ctx.end.getText() : startDateString;
@@ -147,15 +149,31 @@ public class PlannerVisitor extends GrammarBaseVisitor<List<String>> {
     public List<String> visitProg(ProgContext ctx) {
 
         List<String> output = visit(ctx.expr());
-        System.out.println("Prog" + output);
         return output;
     }
 
     @Override
-    public List<String> visitLstg(LstgContext ctx) {
-        List<String> l = super.visitLstg(ctx);
-        System.out.println("Lstg" + l);
-        return l;
+    public List<String> visitHelp_specific_op(Help_specific_opContext ctx) {
+
+        System.out.println("TUTAJ");
+        String path = null;
+        switch (ctx.object.getType()) {
+            case MAIL:
+                path = Constants.HELP_PATH_MAIL;
+                break;
+            case CALENDAR:
+                path = Constants.HELP_PATH_CALENDAR;
+                break;
+        }
+        return readFileTxt(path);
     }
+
+    @Override
+    public List<String> visitHelp_general_op(Help_general_opContext ctx) {
+
+        String path = Constants.HELP_PATH;
+        return Utils.readFileTxt(path);
+    }
+
 }
 

@@ -124,7 +124,6 @@ public class MailService {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-                System.out.println(body);
                 output.add(body);
             }
         }

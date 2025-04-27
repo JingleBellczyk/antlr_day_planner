@@ -1,6 +1,8 @@
 package gui;
 
 import interpreter.Start;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.*;
@@ -81,7 +83,7 @@ public class ConsoleWindow extends JFrame {
             if (result == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fileChooser.getSelectedFile();
                 String currentText = inputField.getText();
-                String path = "\"" + selectedFile.getAbsolutePath() + "\"";
+                String path = selectedFile.getAbsolutePath();
                 inputField.setText(currentText + " " + path);
                 inputField.requestFocus();
             }
@@ -109,7 +111,7 @@ public class ConsoleWindow extends JFrame {
             }
         });
 
-        //mozna strzalki do
+        //mozna strzalki
         inputField.addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
             public void keyPressed(java.awt.event.KeyEvent e) {
@@ -154,6 +156,11 @@ public class ConsoleWindow extends JFrame {
 
             // Łączenie wyników w jedną wiadomość (jeśli są różne linie)
             StringBuilder resultBuilder = new StringBuilder();
+
+            if(resultList == null){
+                resultList = new ArrayList<>();
+                resultList.add("Command doesn't exitst");
+            }
             for (String result : resultList) {
                 resultBuilder.append(result).append("\n");
             }

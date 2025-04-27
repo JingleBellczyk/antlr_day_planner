@@ -19,3 +19,32 @@ mail show <numer>
     - Pokazuje pełną treść wiadomości o numerze <numer>.
     - Przykład:
         mail show 3
+
+CALENDAR KOMENDY
+----------------------------
+CALENDAR KOMENDY
+
+calendar list <number>
+    - Listuje następne wydarzenia(number wydarzeń)
+    - Przykład:
+        calendar list 10
+
+calendar show <date> <argument>=[ dur, desc, color }
+    - Wyświetla wszystkie wydarzenia na dany dzień, wraz z szczegółami (czas trwania, opis, kolor).
+    - Przykład:
+        calendar show 25.04.2025 dur color
+        - Zwróci listę wszystkich wydarzeń zaplanowanych na 25 kwietnia 2025r. z informacjami o czasie trwanie i kolorze
+
+calendar create <start_date> <start_time> <end_date> <end_time> <summary> (occur=occurance? ('before:' bef=STRING)? color=COLOR_TYPE?
+    ('desc:' desc=STRING)?  ('loc:' loc =STRING)?)
+    - occurance: <period> <int> - jak wydarzenie sie potwarza, period = { daily, weekly , monthly , yearly}
+    - COLOR_TYPE = {'red' | 'orange' | 'yellow' | 'basil' | 'green' | 'grape' | 'flamingo' | 'blueberry' | 'blue' | 'graphite' | 'violet'}
+    - Tworzy nowe wydarzenie w kalendarzu, określając datę rozpoczęcia, godzinę rozpoczęcia, datę zakończenia,
+      godzinę zakończenia, tytuł wydarzenia i dodatkowe opcje.
+    - Przykład:
+        - calendar create 29.04.2025 10:45 13:45 "Praca" weekly 10 yellow desc:"Pamiętaj żeby wziąć ładowarkę" loc:"Biuro"
+        - calendar create 29.04.2025 10:45 13:45 "MIASI" before:"Praca" red loc:"Technopolis"
+        - calendar create 03.05.2025 11:00 03.05.2025 13:00 "zadanie 5" weekly 5 before: "zadanie4" red
+        - calendar create 03.05.2025 11:00 13:00 "zadanie 5" daily 5 flamingo desc:"codzienne robienie zadania" loc:"Dom"
+        - calendar create 25.04.2025 09:00 25.04.2025 11:00 "Spotkanie z zespołem"
+        - Zostanie utworzone wydarzenie "Spotkanie z zespołem" w dniu 25 kwietnia 2025 roku, rozpoczynające się o godzinie 09:00 i kończące o 11:00.

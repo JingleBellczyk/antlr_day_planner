@@ -28,7 +28,7 @@ public class MailService {
 
     private Gmail service;
 
-    public MailService(){
+    public MailService() {
         this.service = getGoogleService();
     }
 
@@ -84,9 +84,9 @@ public class MailService {
         return output;
     }
 
-    public List<String> getEmailByIndex(int index){
+    public List<String> getEmailByIndex(int index) {
         List<String> output = new ArrayList<>();
-        long count = index+1;
+        long count = index + 1;
         ListMessagesResponse messagesResponse;
         try {
             messagesResponse = service.users().messages().list("me")
@@ -130,27 +130,46 @@ public class MailService {
         return output;
     }
 
-private static String getBody(Message message) throws IOException {
-    String body = "";
-    if (message.getPayload() != null && message.getPayload().getParts() != null) {
-        for (MessagePart part : message.getPayload().getParts()) {
-            if ("text/plain".equals(part.getMimeType())) {
-                try {
-                    if (part.getBody() != null && part.getBody().getData() != null) {
-                        byte[] decodedBytes = Base64.getUrlDecoder().decode(part.getBody().getData());
-                        body = new String(decodedBytes);
-                        break;
+    private static String getBody(Message message) throws IOException {
+        String body = "";
+
+        // Jeśli payload ma części (parts), próbujemy wydobyć treść
+        if (message.getPayload() != null && message.getPayload().getParts() != null) {
+            for (MessagePart part : message.getPayload().getParts()) {
+                // Sprawdzamy różne typy MIME (tekst prosty i HTML)
+                if ("text/plain".equals(part.getMimeType()) || "text/html".equals(part.getMimeType())) {
+                    try {
+                        if (part.getBody() != null && part.getBody().getData() != null) {
+                            byte[] decodedBytes = Base64.getUrlDecoder().decode(part.getBody().getData());
+                            body = new String(decodedBytes);
+                            break;
+                        }
+                    } catch (IllegalArgumentException e) {
+                        System.err.println("Błąd dekodowania base64: " + e.getMessage());
                     }
-                } catch (IllegalArgumentException e) {
-                    System.err.println("Błąd dekodowania base64: " + e.getMessage());
                 }
             }
         }
-    } else {
-        System.err.println("Brak części wiadomości lub payloadu.");
+
+        // Jeśli brak "parts", sprawdzamy, czy mamy body bezpośrednio w payload
+        if (body.isEmpty() && message.getPayload() != null && message.getPayload().getBody() != null) {
+            try {
+                if (message.getPayload().getBody().getData() != null) {
+                    byte[] decodedBytes = Base64.getUrlDecoder().decode(message.getPayload().getBody().getData());
+                    body = new String(decodedBytes);
+                }
+            } catch (IllegalArgumentException e) {
+                System.err.println("Błąd dekodowania base64: " + e.getMessage());
+            }
+        }
+
+        // W przypadku braku treści, zwracamy pusty tekst
+        if (body.isEmpty()) {
+            System.err.println("Brak treści wiadomości.");
+        }
+
+        return body;
     }
-    return body;
-}
 
     public String sendEmailFromFile(String recipient, String subject, String filePath) {
         String emailContent;

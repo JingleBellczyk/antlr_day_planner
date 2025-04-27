@@ -1,22 +1,25 @@
 package services;
 
-import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
-import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.calendar.model.Events;
-import com.google.api.services.gmail.Gmail;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 import static services.Utils.durationInUnit;
+import static services.Utils.formatDateTimeToString;
 
 public class CalendarService {
 
@@ -75,7 +78,7 @@ public class CalendarService {
                 }
 
                 output.add("Summary: " + (summary != null ? summary : "Not specified"));
-                output.add("Start time: " + start);
+                output.add("Start time: " + formatDateTimeToString(start));
 
                 long durationInMillis = event.getEnd().getDateTime().getValue() - start.getValue();
                 long durationInMinutes = durationInMillis / (60 * 1000);
@@ -84,7 +87,7 @@ public class CalendarService {
                     output.add("Description: " + (description != null ? description : "Not specified"));
                 }
                 if (options.getOrDefault("time", false)) {
-                    output.add("Duration: " + durationInUnit(durationInMinutes) + " minutes");
+                    output.add("Duration: " + durationInUnit(durationInMinutes));
                 }
                 if (options.getOrDefault("color", false)) {
                     output.add("Color: " + (color != null ? color : "Not specified"));
@@ -120,7 +123,7 @@ public class CalendarService {
                 if (start == null) {
                     start = event.getStart().getDate();
                 }
-                output.add(event.getSummary() + " (" + start + ")");
+                output.add(event.getSummary() + " " + formatDateTimeToString(start));
             }
         }
 
@@ -171,25 +174,51 @@ public class CalendarService {
         if (options.containsKey("before")) {
             String beforeSummary = (String) options.get("before");
 
-            DateTime newTime = findTimeBeforeEvent(service, startDateTime, beforeSummary);
-            if (newTime != null) {
-                startDateTime = newTime;
-                endDateTime = new DateTime(newTime.getValue() + 30 * 60 * 1000);
-                event.setStart(new EventDateTime().setDateTime(startDateTime).setTimeZone("Europe/Warsaw"));
-                event.setEnd(new EventDateTime().setDateTime(endDateTime).setTimeZone("Europe/Warsaw"));
+            DateTime newEndTime = findStartOfEventAfter(service, startDateTime, beforeSummary);
+            if (newEndTime != null && newEndTime.getValue() < endDateTime.getValue()) {
+                long durationMillis = endDateTime.getValue() - startDateTime.getValue();
+                DateTime newStartDate = new DateTime(newEndTime.getValue() - durationMillis);
+
+                event.setStart(new EventDateTime().setDateTime(newStartDate).setTimeZone("Europe/Warsaw"));
+                event.setEnd(new EventDateTime().setDateTime(newEndTime).setTimeZone("Europe/Warsaw"));
             }
+
         }
 
-        event = service.events().insert("primary", event).execute();
         List<String> output = new ArrayList<>();
-        output.add("Event created: " + event.getHtmlLink());
+
+        try {
+            Event createdEvent = service.events().insert("primary", event).execute();
+            output.add("Event created: " + createdEvent.getHtmlLink());
+        } catch (GoogleJsonResponseException e) {
+
+            String errorMessage = e.getDetails() != null && e.getDetails().containsKey("message")
+                    ? (String) e.getDetails().get("message")
+                    : "Unknown error";
+
+            output.add("Error: " + errorMessage);
+        }
+
         return output;
     }
 
-    private static DateTime findTimeBeforeEvent(Calendar service, DateTime referenceDate, String summary) throws IOException {
+    private static DateTime findStartOfEventAfter(Calendar service, DateTime referenceDate, String summary) throws IOException {
+
+        Instant instant = Instant.ofEpochMilli(referenceDate.getValue());
+        ZoneId zoneId = ZoneId.systemDefault();
+        LocalDate localDate = instant.atZone(zoneId).toLocalDate();
+
+        // start dnia
+        LocalDateTime startOfDay = localDate.atStartOfDay();
+        DateTime timeMin = new DateTime(startOfDay.atZone(zoneId).toInstant().toEpochMilli());
+
+        // koniec dnia
+        LocalDateTime startOfNextDay = localDate.plusDays(1).atStartOfDay();
+        DateTime timeMax = new DateTime(startOfNextDay.atZone(zoneId).toInstant().toEpochMilli());
+
         Events events = service.events().list("primary")
-                .setTimeMin(referenceDate)
-                .setTimeMax(new DateTime(referenceDate.getValue() + (1000L * 60 * 60 * 24)))
+                .setTimeMin(timeMin)
+                .setTimeMax(timeMax)
                 .setOrderBy("startTime")
                 .setSingleEvents(true)
                 .execute();
@@ -198,7 +227,7 @@ public class CalendarService {
             if (summary.equals(event.getSummary())) {
                 DateTime start = event.getStart().getDateTime();
                 if (start == null) start = event.getStart().getDate();
-                return new DateTime(start.getValue() - 30 * 60 * 1000);
+                return new DateTime(start.getValue());
             }
         }
         return null;

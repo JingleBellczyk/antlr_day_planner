@@ -15,6 +15,7 @@ import com.google.api.services.calendar.CalendarScopes;
 import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -23,7 +24,7 @@ import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
+import java.time.LocalDateTime;
 public class Utils {
 
     private static String credentialsPath = "src/main/resources/credentials.json";
@@ -149,6 +150,18 @@ public class Utils {
             }
             return result.toString();
         }
+    }
+
+    public static String formatDateTimeToString(DateTime dateTime){
+
+        Instant instant = Instant.ofEpochMilli(dateTime.getValue());
+        ZoneId zoneId = ZoneId.systemDefault();
+
+        LocalDateTime localDateTime = instant.atZone(zoneId).toLocalDateTime();
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+        return localDateTime.format(formatter);
     }
 
     public static List<String> readFileTxt(String path) {

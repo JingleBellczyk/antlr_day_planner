@@ -3,12 +3,12 @@
 mail create <adres_email> "<temat>" "<treść wiadomości>"
     - Wysyła maila z podanym tematem i treścią.
     - Przykład:
-        mail create 123@student.pwr.edu.pl "Temat testowy" "Cześć, jak się masz?"
+        mail create 266897@student.pwr.edu.pl "Temat testowy" "Cześć, jak się masz?"
 
 mail create <adres_email> "<temat>" <ścieżka_do_pliku>
     - Wysyła maila z treścią wczytaną z pliku tekstowego.
     - Przykład:
-        mail create 123@student.pwr.edu.pl "Raport tygodniowy" "/Users/User/Documents/raport.txt"
+        mail create 266897@student.pwr.edu.pl "Raport tygodniowy" "/Users/User/Documents/raport.txt"
 
 mail list <liczba>
     - Wyświetla ostatnie <liczba> wiadomości e-mail.

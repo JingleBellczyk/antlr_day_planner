@@ -11,10 +11,7 @@ import org.antlr.v4.runtime.TokenStream;
 import services.Utils;
 
 import java.time.LocalTime;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static grammar.GrammarParser.*;
 import static services.Utils.*;
@@ -60,12 +57,14 @@ public class PlannerVisitor extends GrammarBaseVisitor<List<String>> {
         String title = stripQuotes(ctx.title.getText());
         String mailBody = stripQuotes(ctx.mailBody.getText());
 
-        String result;
+        String result = null;
         switch (ctx.mailBody.getType()) {
             case TXT:
+                System.out.println("TXT");
                 result = userMailOperations.sendEmailFromFile(destination, title, mailBody);
                 break;
             case STRING:
+                System.out.println("STRING");
                 result = userMailOperations.sendEmail(destination, title, mailBody);
                 break;
             default:
@@ -80,8 +79,11 @@ public class PlannerVisitor extends GrammarBaseVisitor<List<String>> {
         GrammarParser.Calendar_objectsContext args = ctx.arg;
 
         boolean hasColor = args.COLOR() != null;
-        boolean hasTime = args.TIME() != null;
+        boolean hasTime = args.DURATION() != null;
         boolean hasDescription = args.DESCRIPTION() != null;
+        System.out.println(hasColor);
+        System.out.println(hasDescription);
+        System.out.println(hasTime);
 
         Map<String, Boolean> options = new HashMap<>();
         options.put("description", hasDescription);
@@ -109,7 +111,7 @@ public class PlannerVisitor extends GrammarBaseVisitor<List<String>> {
         Date endDate = parseAndValidateDate(endDateString);
 
         if (startDate == null || endDate == null) {
-            return List.of(String.format("Bad date format: %s or %s, required format dd.mm.yyyy", startDateString, endDateString));
+            return List.of(String.format("Bad date format: %s, required format dd.mm.yyyy", startDateString, endDateString));
         }
 
         LocalTime startTime = startTimeString != null ? parseAndValidateTime(startTimeString) : LocalTime.MIDNIGHT;
@@ -138,6 +140,7 @@ public class PlannerVisitor extends GrammarBaseVisitor<List<String>> {
             if (objects.loc != null) options.put("location", objects.loc.getText());
         }
 
+        System.out.println(options.get("color"));
         try {
             return userCalendarOperations.createEventWithOptions(startDatetime, endDatetime, summary, options);
         } catch (Exception e) {
@@ -148,14 +151,14 @@ public class PlannerVisitor extends GrammarBaseVisitor<List<String>> {
     @Override
     public List<String> visitProg(ProgContext ctx) {
 
-        List<String> output = visit(ctx.expr());
+        List<String> output = new ArrayList<>();
+        output = visit(ctx.expr());
         return output;
     }
 
     @Override
     public List<String> visitHelp_specific_op(Help_specific_opContext ctx) {
 
-        System.out.println("TUTAJ");
         String path = null;
         switch (ctx.object.getType()) {
             case MAIL:

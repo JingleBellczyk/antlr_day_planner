@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class UserCalendarOperations {
 
-    private CalendarService calendarService;
+    private final CalendarService calendarService;
 
     public UserCalendarOperations() {
         calendarService = new CalendarService();
@@ -27,7 +27,7 @@ public class UserCalendarOperations {
 
     public List<String> listUpcomingEvents(long number) {
         try {
-            return calendarService.listUpcomingEvents((int) number);
+            return CalendarService.listUpcomingEvents((int) number);
         } catch (IOException | GeneralSecurityException e) {
             throw new RuntimeException(e);
         }

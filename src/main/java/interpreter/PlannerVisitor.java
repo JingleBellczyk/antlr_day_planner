@@ -22,8 +22,8 @@ import static services.Utils.*;
 
 public class PlannerVisitor extends GrammarBaseVisitor<List<String>> {
 
-    private UserMailOperations userMailOperations;
-    private UserCalendarOperations userCalendarOperations;
+    private final UserMailOperations userMailOperations;
+    private final UserCalendarOperations userCalendarOperations;
 
     public PlannerVisitor(CharStream input, TokenStream tokens) {
         super();
@@ -35,21 +35,19 @@ public class PlannerVisitor extends GrammarBaseVisitor<List<String>> {
     @Override
     public List<String> visitList_service_last_n(GrammarParser.List_service_last_nContext ctx) {
 
-        Long number = Long.parseLong(ctx.num.getText());
+        long number = Long.parseLong(ctx.num.getText());
 
-        switch (ctx.object.getType()) {
-            case MAIL:
-                return userMailOperations.getLastEmails(number);
-            case CALENDAR:
-                return userCalendarOperations.listUpcomingEvents(number);
-        }
-        return List.of("Nieobsługiwany obiekt do listowania.");
+        return switch (ctx.object.getType()) {
+            case MAIL -> userMailOperations.getLastEmails(number);
+            case CALENDAR -> userCalendarOperations.listUpcomingEvents(number);
+            default -> List.of("Nieobsługiwany obiekt do listowania.");
+        };
     }
 
     @Override
     public List<String> visitShow_mail(GrammarParser.Show_mailContext ctx) {
 
-        Integer index = Integer.parseInt(ctx.num.getText());
+        int index = Integer.parseInt(ctx.num.getText());
         return userMailOperations.showEmailOnIndex(index);
     }
 
@@ -60,17 +58,11 @@ public class PlannerVisitor extends GrammarBaseVisitor<List<String>> {
         String title = stripQuotes(ctx.title.getText());
         String mailBody = stripQuotes(ctx.mailBody.getText());
 
-        String result;
-        switch (ctx.mailBody.getType()) {
-            case TXT:
-                result = userMailOperations.sendEmailFromFile(destination, title, mailBody);
-                break;
-            case STRING:
-                result = userMailOperations.sendEmail(destination, title, mailBody);
-                break;
-            default:
-                result = "Nieznany typ treści wiadomości.";
-        }
+        String result = switch (ctx.mailBody.getType()) {
+            case TXT -> userMailOperations.sendEmailFromFile(destination, title, mailBody);
+            case STRING -> userMailOperations.sendEmail(destination, title, mailBody);
+            default -> "Nieznany typ treści wiadomości.";
+        };
         return List.of(result);
     }
 
@@ -115,7 +107,9 @@ public class PlannerVisitor extends GrammarBaseVisitor<List<String>> {
         LocalTime startTime = startTimeString != null ? parseAndValidateTime(startTimeString) : LocalTime.MIDNIGHT;
         LocalTime endTime = endTimeString != null ? parseAndValidateTime(endTimeString) : LocalTime.MIDNIGHT;
 
+        assert startTime != null;
         DateTime startDatetime = mergeDateAndTime(startDate, startTime);
+        assert endTime != null;
         DateTime endDatetime = mergeDateAndTime(endDate, endTime);
 
         String summary = ctx.sum.getText();
@@ -148,23 +142,18 @@ public class PlannerVisitor extends GrammarBaseVisitor<List<String>> {
     @Override
     public List<String> visitProg(ProgContext ctx) {
 
-        List<String> output = visit(ctx.expr());
-        return output;
+        return visit(ctx.expr());
     }
 
     @Override
     public List<String> visitHelp_specific_op(Help_specific_opContext ctx) {
 
         System.out.println("TUTAJ");
-        String path = null;
-        switch (ctx.object.getType()) {
-            case MAIL:
-                path = Constants.HELP_PATH_MAIL;
-                break;
-            case CALENDAR:
-                path = Constants.HELP_PATH_CALENDAR;
-                break;
-        }
+        String path = switch (ctx.object.getType()) {
+            case MAIL -> Constants.HELP_PATH_MAIL;
+            case CALENDAR -> Constants.HELP_PATH_CALENDAR;
+            default -> null;
+        };
         return readFileTxt(path);
     }
 

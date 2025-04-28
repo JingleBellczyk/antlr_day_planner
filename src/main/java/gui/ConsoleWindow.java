@@ -7,13 +7,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.IOException;
+import java.util.Objects;
 
 public class ConsoleWindow extends JFrame {
 
-    private JTextArea outputArea;
-    private JTextField inputField;
-    private java.util.List<String> commandHistory = new java.util.ArrayList<>();
+    private final JTextArea outputArea;
+    private final JTextField inputField;
+    private final java.util.List<String> commandHistory = new java.util.ArrayList<>();
     private int historyIndex = -1;
 
     public ConsoleWindow() {
@@ -30,7 +30,7 @@ public class ConsoleWindow extends JFrame {
         topPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         topPanel.setBackground(new Color(240, 240, 240));
 
-        ImageIcon icon = new ImageIcon(getClass().getResource("/logo.png")); // ścieżka do pliku w resources
+        ImageIcon icon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/logo.png"))); // ścieżka do pliku w resources
         Image image = icon.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH);
         JLabel logoLabel = new JLabel(new ImageIcon(image));
 
@@ -42,19 +42,7 @@ public class ConsoleWindow extends JFrame {
         titlePanel.add(logoLabel);
         titlePanel.add(titleText);
 
-        JPanel linkPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
-        JButton gmailButton = new JButton("GMAIL");
-        JButton calendarButton = new JButton("CALENDAR");
-        JButton tasksButton = new JButton("TASKS");
-
-        gmailButton.addActionListener(e -> openLink("https://mail.google.com"));
-        calendarButton.addActionListener(e -> openLink("https://calendar.google.com"));
-        tasksButton.addActionListener(e -> openLink("https://tasks.google.com"));
-
-        linkPanel.add(gmailButton);
-        linkPanel.add(calendarButton);
-        linkPanel.add(tasksButton);
-        linkPanel.setOpaque(false);
+        final JPanel linkPanel = getJPanel();
 
         topPanel.add(titlePanel, BorderLayout.WEST);
         topPanel.add(linkPanel, BorderLayout.EAST);
@@ -74,18 +62,7 @@ public class ConsoleWindow extends JFrame {
         inputField = new JTextField();
         inputField.setFont(new Font("Monospaced", Font.PLAIN, 16));
 
-        JButton fileButton = new JButton("📂 Add file");
-        fileButton.addActionListener(e -> {
-            JFileChooser fileChooser = new JFileChooser();
-            int result = fileChooser.showOpenDialog(this);
-            if (result == JFileChooser.APPROVE_OPTION) {
-                File selectedFile = fileChooser.getSelectedFile();
-                String currentText = inputField.getText();
-                String path = "\"" + selectedFile.getAbsolutePath() + "\"";
-                inputField.setText(currentText + " " + path);
-                inputField.requestFocus();
-            }
-        });
+        final JButton fileButton = getJButton();
 
         bottomPanel.add(inputField, BorderLayout.CENTER);
         bottomPanel.add(fileButton, BorderLayout.EAST);
@@ -139,6 +116,39 @@ public class ConsoleWindow extends JFrame {
         add(bottomPanel, BorderLayout.SOUTH);
 
         setVisible(true);
+    }
+
+    private JButton getJButton() {
+        JButton fileButton = new JButton("📂 Add file");
+        fileButton.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            int result = fileChooser.showOpenDialog(this);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = fileChooser.getSelectedFile();
+                String currentText = inputField.getText();
+                String path = "\"" + selectedFile.getAbsolutePath() + "\"";
+                inputField.setText(currentText + " " + path);
+                inputField.requestFocus();
+            }
+        });
+        return fileButton;
+    }
+
+    private JPanel getJPanel() {
+        JPanel linkPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        JButton gmailButton = new JButton("GMAIL");
+        JButton calendarButton = new JButton("CALENDAR");
+        JButton tasksButton = new JButton("TASKS");
+
+        gmailButton.addActionListener(e -> openLink("https://mail.google.com"));
+        calendarButton.addActionListener(e -> openLink("https://calendar.google.com"));
+        tasksButton.addActionListener(e -> openLink("https://tasks.google.com"));
+
+        linkPanel.add(gmailButton);
+        linkPanel.add(calendarButton);
+        linkPanel.add(tasksButton);
+        linkPanel.setOpaque(false);
+        return linkPanel;
     }
 
     private void appendOutput(String text) {

@@ -22,6 +22,6 @@ public class Start {
         ParseTree tree = par.prog();
 
         PlannerVisitor v = new PlannerVisitor(inp,tokens);
-        return (List<String>) v.visit(tree);
+        return v.visit(tree);
     }
 }

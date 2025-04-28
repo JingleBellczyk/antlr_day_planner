@@ -5,14 +5,21 @@ import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInsta
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.googleapis.services.AbstractGoogleClient;
+import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.DateTime;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.calendar.CalendarScopes;
+import com.google.api.services.tasks.TasksScopes;
 
+import java.lang.reflect.Constructor;
+import java.util.function.Function;
 import java.io.*;
+import java.security.GeneralSecurityException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -26,14 +33,17 @@ import java.util.stream.Stream;
 
 public class Utils {
 
-    private static String credentialsPath = "src/main/resources/credentials.json";
+    private static final String credentialsPath = "src/main/resources/credentials.json";
 
     private static final List<String> SCOPES = Stream.concat(
-            Arrays.asList(
-                    "https://www.googleapis.com/auth/gmail.readonly",
-                    "https://www.googleapis.com/auth/gmail.send"
-            ).stream(),
-            Collections.singletonList(CalendarScopes.CALENDAR).stream()
+            Stream.concat(
+                    Stream.of(
+                            "https://www.googleapis.com/auth/gmail.readonly",
+                            "https://www.googleapis.com/auth/gmail.send"
+                    ),
+                    Stream.of(CalendarScopes.CALENDAR)
+            ),
+            Stream.of(TasksScopes.TASKS)
     ).collect(Collectors.toList());
     /**
      * Application name.
@@ -55,6 +65,9 @@ public class Utils {
      * @return An authorized Credential object.
      * @throws IOException If the credentials.json file cannot be found.
      */
+
+
+
     public static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT)
             throws IOException {
         // Load client secrets.
@@ -66,7 +79,7 @@ public class Utils {
         GoogleClientSecrets clientSecrets =
                 GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(new FileInputStream(credentialsFile)));
 
-        // Build flow and trigger user authorization request.
+        // Build flow and trigger a user authorization request.
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
                 HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
                 .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
@@ -74,9 +87,8 @@ public class Utils {
                 .build();
 
         LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
-        Credential credential = new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
         //returns an authorized Credential object.
-        return credential;
+        return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
     }
 
     public static String stripQuotes(String text) {
@@ -176,4 +188,46 @@ public class Utils {
 
         return commands;
     }
+
+    public static <T> T getGoogleService(Class<T> serviceClass) {
+        final NetHttpTransport HTTP_TRANSPORT;
+        try {
+            HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+        } catch (GeneralSecurityException | IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            // Znajdujemy wewnętrzną klasę Builder
+            Class<?> builderClass = Class.forName(serviceClass.getName() + "$Builder");
+
+            // Tworzymy instancję Buildera
+            Constructor<?> builderConstructor = builderClass.getConstructor(
+                    NetHttpTransport.class,
+                    JsonFactory.class,
+                    HttpRequestInitializer.class
+            );
+
+            Object builderInstance = builderConstructor.newInstance(
+                    HTTP_TRANSPORT,
+                    Utils.JSON_FACTORY,
+                    Utils.getCredentials(HTTP_TRANSPORT)
+            );
+
+            // Ustawiamy applicationName
+            builderClass.getMethod("setApplicationName", String.class)
+                    .invoke(builderInstance, "PLANNER APP");
+
+            // Wywołujemy build() na builderze
+            return serviceClass.cast(
+                    builderClass.getMethod("build")
+                            .invoke(builderInstance)
+            );
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create service for: " + serviceClass.getSimpleName(), e);
+        }
+    }
+
+
 }

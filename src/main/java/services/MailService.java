@@ -21,12 +21,12 @@ import java.util.*;
 
 public class MailService {
 
-    private static List<String> SCOPES = Arrays.asList(
+    private static final List<String> SCOPES = Arrays.asList(
             "https://www.googleapis.com/auth/gmail.readonly",
             "https://www.googleapis.com/auth/gmail.send"
     );
 
-    private Gmail service;
+    private final Gmail service;
 
     public MailService(){
         this.service = getGoogleService();
@@ -47,7 +47,6 @@ public class MailService {
             throw new RuntimeException(e);
         }
     }
-
     public List<String> getRecentEmails(Long count) {
         List<String> output = new ArrayList<>();
         ListMessagesResponse messagesResponse;

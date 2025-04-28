@@ -1,7 +1,8 @@
 apply plugin: 'java'
 apply plugin: 'application'
+apply plugin: 'antlr'
 
-mainClassName = 'CalendarQuickstart'
+mainClassName = 'interpreter.Main'
 version = '1.0'
 
 sourceSets {
@@ -34,4 +35,5 @@ dependencies {
     implementation 'com.google.apis:google-api-services-docs:v1-rev20240730-2.0.0'
     implementation 'com.google.apis:google-api-services-drive:v3-rev20250220-2.0.0'
     implementation 'com.sun.mail:jakarta.mail:1.6.4'
+    implementation 'com.google.apis:google-api-services-tasks:v1-rev20250316-2.0.0'
 }

@@ -1,1 +1,49 @@
-todo vdrgvzsvgdez
+// Help dla calendar (help_calendar.txt)
+=== CALENDAR - HELP ===
+
+Dostępne komendy:
+
+1. Wyświetlanie listy nadchodzących wydarzeń
+   calendar list [liczba]
+   
+   Przykłady:
+   calendar list 5   - Wyświetl 5 nadchodzących wydarzeń
+   calendar list 10  - Wyświetl 10 nadchodzących wydarzeń
+
+2. Wyświetlanie wydarzeń z danego dnia
+   calendar show [data] [opcje]
+   
+   Gdzie:
+   - data: format DD.MM.RRRR (np. 01.05.2025)
+   - opcje (opcjonalne): time, desc, color
+   
+   Przykłady:
+   calendar show 01.05.2025                  - Wyświetl wydarzenia z 1 maja 2025
+   calendar show 01.05.2025 time desc        - Wyświetl wydarzenia z czasem i opisem
+   calendar show 01.05.2025 time desc color  - Wyświetl wszystkie szczegóły
+
+3. Tworzenie nowego wydarzenia
+   calendar create [data_początek] [czas_początek] [data_koniec] [czas_koniec] SUMMARY: [tytuł] [opcje]
+   
+   Gdzie:
+   - data_początek, data_koniec: format DD.MM.RRRR (np. 01.05.2025)
+   - czas_początek, czas_koniec: format HH:MM (np. 14:30)
+   - tytuł: tekst w cudzysłowach (np. "Spotkanie")
+   - opcje (opcjonalne): 
+     * color [kolor] - np. blue, green, red, yellow, purple, orange, turquoise, gray
+     * desc: [opis] - opis w cudzysłowach
+     * loc: [lokacja] - lokacja w cudzysłowach
+     * [period] [liczba] - powtarzanie (daily, weekly, monthly, yearly)
+     * before: [tytuł] - ustawienie terminu przed innym wydarzeniem
+   
+   Przykłady:
+   calendar create 01.05.2025 14:30 01.05.2025 16:30 SUMMARY: "Spotkanie zespołu"
+   calendar create 01.05.2025 14:30 01.05.2025 16:30 SUMMARY: "Spotkanie" desc: "Omówienie projektu" loc: "Sala 1" color blue
+   calendar create 01.05.2025 09:00 01.05.2025 10:00 SUMMARY: "Codzienny status" daily 5
+
+Uwagi:
+- Daty muszą być w formacie DD.MM.RRRR.
+- Czasy muszą być w formacie HH:MM (24-godzinnym).
+- Teksty zawierające spacje muszą być w cudzysłowach.
+- Data końcowa jest opcjonalna - jeśli nie podano, używana jest data początkowa.
+- Dostępne kolory: blue, green, purple, red, yellow, orange, turquoise, gray, bold_blue, bold_green, bold_red.

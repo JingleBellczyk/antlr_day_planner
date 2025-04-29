@@ -1,0 +1,69 @@
+=== TASKS - HELP ===
+
+Dostępne komendy:
+
+1. Operacje na listach zadań (tasklist)
+
+   a. Wyświetlanie wszystkich list zadań
+      tasklist all
+
+   b. Tworzenie nowej listy zadań
+      tasklist create [nazwa]
+
+      Przykład:
+      tasklist create "Moje zadania"
+
+   c. Usuwanie listy zadań
+      tasklist delete [nazwa]
+
+      Przykład:
+      tasklist delete "Stare zadania"
+
+   d. Zmiana nazwy listy zadań
+      tasklist rename [obecna_nazwa] [nowa_nazwa]
+
+      Przykład:
+      tasklist rename "Zadania" "Ważne zadania"
+
+   e. Wyświetlanie zadań z listy
+      tasklist list [nazwa]
+
+      Przykład:
+      tasklist list "Moje zadania"
+
+   f. Usuwanie zadania z listy
+      tasklist remove [nazwa_listy] [nazwa_zadania]
+
+      Przykład:
+      tasklist remove "Moje zadania" "Zakupy"
+
+2. Operacje na zadaniach (task)
+
+   a. Tworzenie nowego zadania
+      task create [nazwa_listy] [tytuł_zadania] [rodzic]
+
+      Gdzie:
+      - nazwa_listy: nazwa istniejącej listy zadań
+      - tytuł_zadania: tytuł nowego zadania
+      - rodzic (opcjonalny): nazwa zadania nadrzędnego
+
+      Przykłady:
+      task create "Moje zadania" "Zrobić zakupy"
+      task create "Projekt" "Podzadanie" "Zadanie główne"
+
+   b. Wyświetlanie szczegółów zadania
+      task show [nazwa_listy] [nazwa_zadania]
+
+      Przykład:
+      task show "Moje zadania" "Zrobić zakupy"
+
+   c. Usuwanie zadania
+      task delete [nazwa_listy] [nazwa_zadania]
+
+      Przykład:
+      task delete "Moje zadania" "Zakończone zadanie"
+
+Uwagi:
+- Wszystkie nazwy zawierające spacje muszą być w cudzysłowach.
+- Zadania mogą być zagnieżdżone (mieć zadania nadrzędne).
+- Usunięcie listy zadań usuwa wszystkie zadania na tej liście.

@@ -6,7 +6,6 @@ import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.googleapis.services.AbstractGoogleClient;
 import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
@@ -17,7 +16,6 @@ import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.tasks.TasksScopes;
 
 import java.lang.reflect.Constructor;
-import java.util.function.Function;
 import java.io.*;
 import java.security.GeneralSecurityException;
 import java.text.ParseException;
@@ -35,16 +33,15 @@ public class Utils {
 
     private static final String credentialsPath = "src/main/resources/credentials.json";
 
-    private static final List<String> SCOPES = Stream.concat(
-            Stream.concat(
+    private static final List<String> SCOPES =
                     Stream.of(
                             "https://www.googleapis.com/auth/gmail.readonly",
-                            "https://www.googleapis.com/auth/gmail.send"
-                    ),
-                    Stream.of(CalendarScopes.CALENDAR)
-            ),
-            Stream.of(TasksScopes.TASKS)
-    ).collect(Collectors.toList());
+                            "https://www.googleapis.com/auth/gmail.send",
+                            TasksScopes.TASKS,
+                            TasksScopes.TASKS_READONLY,
+                            CalendarScopes.CALENDAR
+                    )
+    .collect(Collectors.toList());
     /**
      * Application name.
      */
@@ -207,16 +204,21 @@ public class Utils {
                     JsonFactory.class,
                     HttpRequestInitializer.class
             );
+            System.out.println("2 etap");
+
 
             Object builderInstance = builderConstructor.newInstance(
                     HTTP_TRANSPORT,
                     Utils.JSON_FACTORY,
                     Utils.getCredentials(HTTP_TRANSPORT)
             );
+            System.out.println("3 etap");
+
 
             // Ustawiamy applicationName
             builderClass.getMethod("setApplicationName", String.class)
                     .invoke(builderInstance, "PLANNER APP");
+            System.out.println("4 etap");
 
             // Wywołujemy build() na builderze
             return serviceClass.cast(

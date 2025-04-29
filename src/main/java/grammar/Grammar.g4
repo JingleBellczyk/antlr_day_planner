@@ -10,49 +10,56 @@ expr:
      | tasklist                      # tsk_lst_tok
      | task                          # tsk_tok
 ;
-help:
-    object=(MAIL | CALENDAR) 'help' #help_specific_op
-    | 'help' #help_general_op
-    ;
 
 listing:
      object=(MAIL | CALENDAR) LIST num=INT #list_service_last_n;
 
-tasklist:
-    TASKLIST CREATE name=STRING  #create_tasklist //stworzenie nowej listy tasków
-    | TASKLIST DELETE name=STRING  #delete_tasklist //usunięcie listy tasków
-    | TASKLIST UPDATE name=STRING  #update_tasklist //zmiana listy tasków
-    | TASKLIST ALL #list_all_tasklists //wypisanie wszystkich list tasków
-    | TASKLIST SHOW name=STRING #show_tasklist // pokazanie konkretnej listy tasków
-    | TASKLIST REMOVE tasklist_name=STRING task_name=STRING #remove_task_from_tasklist     //Usunięcie taska z konkretnej listy
-    | TASKLIST LIST name=STRING #list_tasklist_tasks     //Listowanie wszystkich tasków z listy
-    | TASKLIST CLEAR name=STRING #clear_tasklist     //Usunięcie wszystkich ukończonych tasków
-;
+// Zmiany do wprowadzenia w pliku Grammar.g4
 
-task:
-     TASK MOVE tasklist_name=STRING task_name=STRING dest=STRING? new_parent=STRING? after_task=STRING?  #move_task     // Moves task from one list to another or just moves it within particlar list
-    | TASK CREATE tasklist_name=STRING task_title=STRING parent=STRING? after_task=STRING? #create_task     //Creates task in tasklist with some optional parameters
-    | TASK SHOW tasklist_name=STRING task_name=STRING #show_task    //Shows particular task
-    | TASK DELETE tasklist_name=STRING task_name=STRING #remove_task    //Removes task from specified list
-    | TASK UPDATE tasklist_name=STRING task_name=STRING (SUMMARY sum=STRING)? (TITLE sum=STRING)? ('status' sum=STATUS)? #update_task    //Removes task from specified list
+// 1. Rozszerz regułę help o obsługę TASK i TASKLIST
+help:
+    object=(MAIL | CALENDAR | TASK | TASKLIST) 'help' #help_specific_op
+    | 'help' #help_general_op
+    ;
 
-;
-
+// 2. Dodaj reguły dla komend pomocy w poszczególnych serwisach
+// Dodaj reguły do mail:
 mail:
-     base=MAIL do=SHOW num=INT #show_mail //można wypisać zawartość maila
-     | base=MAIL do=CREATE (dest=EMAIL title=STRING mailBody=(STRING | TXT)) #send_mail//można wysłać maila od zadanej treści z pliku lub z komendy na email z tematem
+     base=MAIL do=SHOW num=INT #show_mail
+     | base=MAIL do=CREATE (dest=EMAIL title=STRING mailBody=(STRING | TXT)) #send_mail
+     | base=MAIL 'help' #help_mail_op // Dodana reguła
  ;
 
-
+// Dodaj reguły do calendar:
 calendar:
-    CALENDAR SHOW date=DATE arg=calendar_objects #show_events_date //wypisanie wszystkich wydarzeń na dany dzień ze szczegółami np. czas, lokacja, summary
-    | CALENDAR CREATE start=DATE startTime=HOUR_MINUTE (end=DATE)? endTime=HOUR_MINUTE SUMMARY':' sum=STRING arg=event_objects #create_event  //stworzenie nowego wydarzenia, które można spersonalizować
-     ;
+    CALENDAR SHOW date=DATE arg=calendar_objects #show_events_date
+    | CALENDAR CREATE start=DATE startTime=HOUR_MINUTE (end=DATE)? endTime=HOUR_MINUTE SUMMARY':' sum=STRING arg=event_objects #create_event
+    | CALENDAR 'help' #help_calendar_op // Dodana reguła
+    ;
 
+// Dodaj reguły do task:
+task:
+    TASK CREATE tasklist_name=STRING task_title=STRING parent=STRING? #create_task
+    | TASK SHOW tasklist_name=STRING task_name=STRING #show_task
+    | TASK DELETE tasklist_name=STRING task_name=STRING #delete_task
+    | TASK 'help' #help_task_op // Dodana reguła
+    ;
+
+// Dodaj reguły do tasklist:
+tasklist:
+    TASKLIST CREATE name=STRING  #create_tasklist
+    | TASKLIST DELETE name=STRING  #delete_tasklist
+    | TASKLIST RENAME current_name=STRING new_name=STRING  #rename_tasklist
+    | TASKLIST ALL #list_all_tasklists
+    | TASKLIST REMOVE tasklist_name=STRING task_name=STRING #remove_task_from_tasklist
+    | TASKLIST LIST name=STRING #list_tasklist_tasks
+    | TASKLIST 'help' #help_tasklist_op // Dodana reguła
+    ;
 event_objects:
          (occur=occurance? ('before:' bef=STRING)? color=COLOR_TYPE? ('desc:' desc=STRING)?  ('loc:' loc =STRING)?)
  ;
 
+//updateOption: 'status' STATUS | 'summ' STRING | 'title' STRING;
 
 calendar_objects:
     (TIME? DESCRIPTION? COLOR?) //można użyć tylko raz, są to informacje do spersonalizowania przez użytkownika do wyświetlenia dla maili
@@ -77,6 +84,7 @@ CREATE: 'create';
 DELETE: 'delete';
 ADD: 'add';
 UPDATE: 'update';
+RENAME: 'rename';
 SHOW: 'show';
 ALL: 'all';
 CLEAR: 'clear';

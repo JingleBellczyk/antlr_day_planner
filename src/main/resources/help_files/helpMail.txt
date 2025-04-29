@@ -1,21 +1,34 @@
-📬 MAIL KOMENDY
-----------------------------
-mail create <adres_email> "<temat>" "<treść wiadomości>"
-    - Wysyła maila z podanym tematem i treścią.
-    - Przykład:
-        mail create 123@student.pwr.edu.pl "Temat testowy" "Cześć, jak się masz?"
+=== MAIL - HELP ===
 
-mail create <adres_email> "<temat>" <ścieżka_do_pliku>
-    - Wysyła maila z treścią wczytaną z pliku tekstowego.
-    - Przykład:
-        mail create 123@student.pwr.edu.pl "Raport tygodniowy" "/Users/User/Documents/raport.txt"
+Dostępne komendy:
 
-mail list <liczba>
-    - Wyświetla ostatnie <liczba> wiadomości e-mail.
-    - Przykład:
-        mail list 5
+1. Wyświetlanie listy wiadomości
+   mail list [liczba]
+   
+   Przykłady:
+   mail list 5      - Wyświetl 5 ostatnich wiadomości
+   mail list 10     - Wyświetl 10 ostatnich wiadomości
 
-mail show <numer>
-    - Pokazuje pełną treść wiadomości o numerze <numer>.
-    - Przykład:
-        mail show 3
+2. Wyświetlanie szczegółów wiadomości
+   mail show [indeks]
+   
+   Przykłady:
+   mail show 1      - Wyświetl szczegóły pierwszej wiadomości
+   mail show 3      - Wyświetl szczegóły trzeciej wiadomości
+
+3. Wysyłanie wiadomości
+   mail create [adres_email] [temat] [treść]
+   
+   Gdzie:
+   - adres_email: poprawny adres email (np. user@example.com)
+   - temat: tekst w cudzysłowach (np. "Temat wiadomości")
+   - treść: tekst w cudzysłowach (np. "Treść wiadomości") lub ścieżka do pliku .txt
+   
+   Przykłady:
+   mail create user@example.com "Temat wiadomości" "Treść wiadomości"
+   mail create user@example.com "Raport" C:\Dokumenty\raport.txt
+
+Uwagi:
+- Indeksy wiadomości zaczynają się od 0.
+- Teksty zawierające spacje muszą być w cudzysłowach.
+- W przypadku ścieżek z backslashami (\), należy je podwajać lub używać slasha (/).

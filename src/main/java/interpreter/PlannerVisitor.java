@@ -6,17 +6,16 @@ import grammar.GrammarParser;
 import logic.Constants;
 import logic.UserCalendarOperations;
 import logic.UserMailOperations;
+import logic.UserTasksOperations;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.TokenStream;
 import services.Utils;
 
 import java.time.LocalTime;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static grammar.GrammarParser.*;
+import static logic.Constants.*;
 import static services.Utils.*;
 
 
@@ -24,11 +23,14 @@ public class PlannerVisitor extends GrammarBaseVisitor<List<String>> {
 
     private final UserMailOperations userMailOperations;
     private final UserCalendarOperations userCalendarOperations;
+    private final UserTasksOperations userTasksOperations;
+
 
     public PlannerVisitor(CharStream input, TokenStream tokens) {
         super();
         this.userMailOperations = new UserMailOperations();
         this.userCalendarOperations = new UserCalendarOperations();
+        this.userTasksOperations = new UserTasksOperations();
     }
 
 
@@ -147,22 +149,130 @@ public class PlannerVisitor extends GrammarBaseVisitor<List<String>> {
 
     @Override
     public List<String> visitHelp_specific_op(Help_specific_opContext ctx) {
-
-        System.out.println("TUTAJ");
-        String path = switch (ctx.object.getType()) {
-            case MAIL -> Constants.HELP_PATH_MAIL;
-            case CALENDAR -> Constants.HELP_PATH_CALENDAR;
-            default -> null;
+        // Obsługa komendy help dla konkretnego serwisu
+        String helpPath = switch (ctx.object.getType()) {
+            case MAIL -> HELP_PATH_MAIL;
+            case CALENDAR -> HELP_PATH_CALENDAR;
+            case TASK, TASKLIST -> HELP_PATH_TASKS;
+            default -> HELP_PATH;
         };
-        return readFileTxt(path);
+
+        return readFileTxt(helpPath);
     }
 
     @Override
     public List<String> visitHelp_general_op(Help_general_opContext ctx) {
-
-        String path = Constants.HELP_PATH;
-        return Utils.readFileTxt(path);
+        // Obsługa ogólnej komendy help
+        return Utils.readFileTxt(HELP_PATH);
     }
 
-}
+    // Dodane metody do obsługi komend help dla poszczególnych serwisów
 
+    @Override
+    public List<String> visitHelp_mail_op(GrammarParser.Help_mail_opContext ctx) {
+        // Obsługa komendy "mail help"
+        return Utils.readFileTxt(HELP_PATH_MAIL);
+    }
+
+    @Override
+    public List<String> visitHelp_calendar_op(GrammarParser.Help_calendar_opContext ctx) {
+        // Obsługa komendy "calendar help"
+        return Utils.readFileTxt(HELP_PATH_CALENDAR);
+    }
+
+    @Override
+    public List<String> visitHelp_task_op(GrammarParser.Help_task_opContext ctx) {
+        // Obsługa komendy "task help"
+        return Utils.readFileTxt(HELP_PATH_TASKS);
+    }
+
+    @Override
+    public List<String> visitHelp_tasklist_op(GrammarParser.Help_tasklist_opContext ctx) {
+        // Obsługa komendy "tasklist help"
+        return Utils.readFileTxt(HELP_PATH_TASKS);
+    }
+
+    @Override
+    public List<String> visitCreate_tasklist(Create_tasklistContext ctx) {
+        String tasklistName = stripQuotes(ctx.name.getText());
+        return userTasksOperations.createTasklist(tasklistName);
+    }
+
+    @Override
+    public List<String> visitDelete_tasklist(Delete_tasklistContext ctx) {
+        String tasklistName = stripQuotes(ctx.name.getText());
+        return userTasksOperations.deleteTasklist(tasklistName);
+    }
+
+    @Override
+    public List<String> visitRename_tasklist(Rename_tasklistContext ctx)
+    {
+        String currentName = stripQuotes(ctx.current_name.getText());
+        String newName = stripQuotes(ctx.new_name.getText());
+
+        return userTasksOperations.renameTaskList(currentName, newName);
+    }
+
+    @Override
+    public List<String> visitList_all_tasklists(List_all_tasklistsContext ctx) {
+        return userTasksOperations.listAllTasklists();
+    }
+
+    @Override
+    public List<String> visitRemove_task_from_tasklist(Remove_task_from_tasklistContext ctx) {
+        String taskListName = stripQuotes(ctx.tasklist_name.getText());
+        String taskName = stripQuotes(ctx.task_name.getText());
+        return userTasksOperations.removeTaskFromTasklist(taskListName, taskName);
+
+    }
+
+    @Override
+    public List<String> visitList_tasklist_tasks(List_tasklist_tasksContext ctx) {
+        String tasklistName = stripQuotes(ctx.name.getText());
+        return userTasksOperations.listTasksFromTasklist(tasklistName);
+    }
+
+    @Override
+    public List<String> visitCreate_task(Create_taskContext ctx) {
+        String taskListName = stripQuotes(ctx.tasklist_name.getText());
+        String taskName = stripQuotes(ctx.task_title.getText());
+        if (ctx.parent != null) {
+            String parentName = stripQuotes(ctx.parent.getText());
+            return userTasksOperations.createTask(taskListName, taskName, parentName);
+        }
+        return userTasksOperations.createTask(taskListName, taskName,null);
+
+    }
+
+    @Override
+    public List<String> visitShow_task(Show_taskContext ctx) {
+        String taskListName = stripQuotes(ctx.tasklist_name.getText());
+        String taskName = stripQuotes(ctx.task_name.getText());
+        return userTasksOperations.showTask(taskListName, taskName);
+    }
+
+    @Override
+    public List<String> visitDelete_task(Delete_taskContext ctx) {
+        String taskListName = stripQuotes(ctx.tasklist_name.getText());
+        String taskName = stripQuotes(ctx.task_name.getText());
+        return userTasksOperations.deleteTask(taskListName, taskName);
+    }
+
+//    @Override
+//    public List<String> visitUpdateOption(UpdateOptionContext ctx) {
+//        String newTitle =  ctx.STATUS().getText() != null ? stripQuotes(ctx.tit.getText()) : null;
+//        return super.visitUpdateOption(ctx);
+//    }
+//
+//    @Override
+//    public List<String> visitUpdate_task(Update_taskContext ctx) {
+//        String taskListName = stripQuotes(ctx.tasklist_name.getText());
+//        String taskName = stripQuotes(ctx.task_name.getText());
+//        String newTitle =  ctx.updateOption(). != null ? stripQuotes(ctx.tit.getText()) : null;
+//        String newStatus = ctx.sta != null ? ctx.sta.getText() : null;
+//        String newSummary = ctx.sum != null ? stripQuotes(ctx.sum.getText()) : null;
+
+
+//        return userTasksOperations.updateTask(taskListName,taskName,newTitle,newSummary,newStatus);
+//    }
+}

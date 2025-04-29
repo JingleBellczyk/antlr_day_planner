@@ -1,21 +1,21 @@
-📬 MAIL KOMENDY
-----------------------------
-mail create <adres_email> "<temat>" "<treść wiadomości>"
-    - Wysyła maila z podanym tematem i treścią.
-    - Przykład:
-        mail create 123@student.pwr.edu.pl "Temat testowy" "Cześć, jak się masz?"
+=== SIMPLE DAY PLANNER - POMOC OGÓLNA ===
 
-mail create <adres_email> "<temat>" <ścieżka_do_pliku>
-    - Wysyła maila z treścią wczytaną z pliku tekstowego.
-    - Przykład:
-        mail create 123@student.pwr.edu.pl "Raport tygodniowy" "/Users/User/Documents/raport.txt"
+Dostępne serwisy:
 
-mail list <liczba>
-    - Wyświetla ostatnie <liczba> wiadomości e-mail.
-    - Przykład:
-        mail list 5
+1. MAIL - zarządzanie wiadomościami email
+   Podstawowe komendy: mail list, mail show, mail create
+   Szczegółowa pomoc: mail help
 
-mail show <numer>
-    - Pokazuje pełną treść wiadomości o numerze <numer>.
-    - Przykład:
-        mail show 3
+2. CALENDAR - zarządzanie kalendarzem i wydarzeniami
+   Podstawowe komendy: calendar list, calendar show, calendar create
+   Szczegółowa pomoc: calendar help
+
+3. TASKS - zarządzanie listami zadań i zadaniami
+   Podstawowe komendy: tasklist all, task create, task show
+   Szczegółowa pomoc: task help, tasklist help
+
+PRZYKŁADY:
+- mail list 5
+- mail show 1
+- calendar show 01.05.2025
+- tasklist all

@@ -197,8 +197,8 @@ public class ConsoleWindow extends JFrame {
             if (result == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fileChooser.getSelectedFile();
                 String currentText = inputField.getText();
-                String path = selectedFile.getAbsolutePath().replace("\\", "\\\\");
-                inputField.setText(currentText + " \"" + path + "\"");
+                String path = selectedFile.getAbsolutePath();
+                inputField.setText(currentText + " " + path);
                 inputField.requestFocus();
             }
         });
